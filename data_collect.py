@@ -178,6 +178,8 @@ class Detector_Node(Node):
                             img = self.camera.imageBufferRGB
 
                             #acceleration = self.myCar.accelerometer[0]
+
+                            print(0)
                             
                             #distance += velocity * dt
                             total_distance = self.myCar.motorEncoder[0] / 136815.453
@@ -188,6 +190,8 @@ class Detector_Node(Node):
                             velocity = distance / dt
                             current_velo = velocity
                             last_velocity = velocity
+
+
                             
 
 
@@ -196,28 +200,24 @@ class Detector_Node(Node):
 
                             # Image statistics 
 
-                            
+                            print(1)
                             high_freq_power, low_freq_power = fourier(img)
                             texture_entropy = entropy(img)
 
                             gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-
+                            print(2)
                             length = edgeLengh(gray_image)
                             brightness = luminosity(gray_image)
                             contrast = deviation(gray_image)
 
-
-
-                            
-
-
-
-
+                            print(3)
                             # Preprocess image
                             bgrImg = cudaFromNumpy(img, isBGR=True)
                             cudaImg = cudaAllocMapped(width=bgrImg.width, height=bgrImg.height, format='rgb8')
                             cudaConvertColor(bgrImg, cudaImg)
+
+                            print(4)
 
 
                             if cudaImg is None:  # capture timeout
@@ -269,7 +269,7 @@ class Detector_Node(Node):
                             #print(f'Acceleration = {acceleration} m/s2')
                             #print(f"Detection length: {len(detections)}")
 
-                            t2 = time.time()''
+                            t2 = time.time()
 
                             dt = t2 - t1
 

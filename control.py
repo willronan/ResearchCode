@@ -21,6 +21,7 @@ import sys
 import time
 import numpy as np
 import matplotlib.pyplot as plt  # Import matplotlib for plotting
+import csv
 
 plt.ion() 
 
@@ -36,10 +37,15 @@ class Motor_Node(Node):
 
 
         # Lists to store the data
-        self.acceleration_list = []
         self.velocity_list = []
         self.distance_list = []
         self.confidence_list = []
+        self.low_freq_power_list = []
+        self.high_freq_power_list = []
+        self.texture_entropy_list = []
+        self.brightness_list = []
+        self.length_list = []
+        self.contrast_list = []
 
         self.max_velocity = 0
         self.distance_travelled = 0
@@ -56,6 +62,23 @@ class Motor_Node(Node):
             for item in list_data:
                 file.write(f"{item}\n")
 
+    def write_data_to_csv(self, filename, confidence_list, distance_list, velocity_list, low_freq_power_list, high_freq_power_list, texture_entropy_list, length_list, brightness_list, contrast_list):
+        # Combine all lists into rows for CSV writing
+        rows = zip(confidence_list, distance_list, velocity_list, low_freq_power_list, high_freq_power_list, texture_entropy_list, length_list, brightness_list, contrast_list)
+        
+        # Define the header for the CSV file
+        header = ['Confidence', 'Distance', 'Velocity', 'Low Power Freq', 'High Power Freq', 'Entropy', 'Brightness', 'Length', 'Contrast']
+        
+        # Open the file and write the data
+        with open(filename, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            
+            # Write the header row
+            writer.writerow(header)
+            
+            # Write the data rows
+            writer.writerows(rows)
+
 
     def detection_callback(self, msg):
 
@@ -64,10 +87,19 @@ class Motor_Node(Node):
             print("message heard")
 
             if msg.data == "Done":
-                self.write_list_to_file(f'Vel={self.max_velocity} acceleration_list', self.acceleration_list)
-                self.write_list_to_file(f'Vel={self.max_velocity} velocity_list', self.velocity_list)
-                self.write_list_to_file(f'Vel={self.max_velocity} distance_list', self.distance_list)
-                self.write_list_to_file(f'Vel={self.max_velocity} confidence_list', self.confidence_list)
+                self.write_data_to_csv(
+                    filename=f'velocity={self.max_velocity}.csv',
+                    confidence_list=self.confidence_list,
+                    distance_list=self.distance_list,
+                    velocity_list=self.velocity_list,
+                    low_freq_power_list=self.low_freq_power_list,
+                    high_freq_power_list=self.high_freq_power_list,
+                    texture_entropy_list=self.texture_entropy_list,
+                    length_list=self.length_list,
+                    brightness_list=self.brightness_list,
+                    contrast_list=self.contrast_list
+
+                )
                 print(f'Distance traveled = {self.distance_travelled}')
 
 
@@ -90,15 +122,21 @@ class Motor_Node(Node):
             else:
 
                 self.get_logger().info('Data status is %s' % msg.data)
-                confidence, acceleration, velocity, distance = map(float, msg.data.split(','))
+                confidence, velocity, distance, low_freq_power, high_freq_power, texture_entropy, length, brightness, contrast  = map(float, msg.data.split(','))
 
                 distance = 2 - distance
 
-                self.acceleration_list.append(acceleration)
+                self.confidence_list.append(confidence)
                 self.velocity_list.append(velocity)
                 self.distance_list.append(distance)
-                self.confidence_list.append(confidence)
-            
+                self.low_freq_power_list.append(low_freq_power)
+                self.high_freq_power_list.append(high_freq_power)
+                self.texture_entropy_list.append(texture_entropy)
+                self.length.append(length)
+                self.brightness.append(brightness)
+                self.contrast_list.append(contrast)
+
+
                 # Track the maximum velocity
                 if velocity > self.max_velocity:
                     self.max_velocity = velocity
